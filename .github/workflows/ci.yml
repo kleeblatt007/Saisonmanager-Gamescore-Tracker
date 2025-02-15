@@ -38,16 +38,16 @@ jobs:
 
       - name: Prepare macOS Artifact (if macOS)
         if: runner.os == 'macOS'
-        run: tar -czvf macOS-Build.tar.gz dist/*.app
+        run: tar -czvf macOS-Build.tar.gz build/*.app
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: Nuitka-Build-${{ runner.os }}
           path: |
-            dist/*.exe
-            dist/*.bin
-            dist/*.app/**
+            build/*.exe
+            build/*.bin
+            build/*.app/**
             macOS-Build.tar.gz
           include-hidden-files: true
 
