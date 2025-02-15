@@ -40,22 +40,18 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-  
+      contents: write  # Required to create a release
+
     steps:
       - name: Download all build artifacts
         uses: actions/download-artifact@v4
-  
-      - name: Rename artifacts
-        run: |
-          mkdir artifacts
-          mv GamescoreTracker-ubuntu-latest/GamescoreTracker artifacts/GamescoreTracker-linux
-          mv GamescoreTracker-windows-latest/GamescoreTracker.exe artifacts/GamescoreTracker.exe
-          mv GamescoreTracker-macos-latest/GamescoreTracker artifacts/GamescoreTracker-mac
-  
+        with:
+         path: my-artifact
+         pattern: my-artifact-*
+
       - name: Display downloaded files
-        run: ls -R artifacts
-  
+        run: ls -R my-artifact
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -63,6 +59,6 @@ jobs:
           name: Release ${{ github.ref_name }}
           body: |
             Automated release for version ${{ github.ref_name }}.
-          files: artifacts/*
+          files: my-artifact/**/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
