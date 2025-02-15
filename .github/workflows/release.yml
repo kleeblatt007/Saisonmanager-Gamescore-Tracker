@@ -72,6 +72,9 @@ jobs:
       - name: Build Binary
         run: pyinstaller --onefile --name GamescoreTracker App.py
 
+      - name: Make macOS binary executable
+        run: chmod +x dist/GamescoreTracker
+
       - name: Upload macOS Artifact
         uses: actions/upload-artifact@v4
         with:
