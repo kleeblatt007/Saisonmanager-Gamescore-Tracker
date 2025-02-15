@@ -1,0 +1,44 @@
+[tool.briefcase]
+project_name = "Gamescore Tracker"
+version = "2.0.0"
+description = "A simple gamescore tracking app."
+author = "Clemens Bandrock"
+requires-python = ">=3.9"
+homepage = "https://github.com/kleeblatt007/Saisonmanager-Gamescore-Tracker"
+
+[tool.briefcase.app.gamescoretracker]
+formal_name = "Gamescore Tracker"
+description = "Track game scores easily!"
+long_description = "An application that helps you keep track of game scores across different platforms."
+
+# 🖥️ macOS Configuration
+[tool.briefcase.app.gamescoretracker.macOS]
+requires = [
+    "toga-cocoa~=0.3.0",  # GUI framework for macOS
+]
+system_requires = []
+
+# 🖥️ Windows Configuration
+[tool.briefcase.app.gamescoretracker.windows]
+requires = [
+    "toga-winforms~=0.3.0",  # GUI framework for Windows
+]
+system_requires = []
+
+# 🐧 Linux Configuration
+[tool.briefcase.app.gamescoretracker.linux]
+requires = [
+    "toga-gtk~=0.3.0",  # GUI framework for Linux
+]
+system_requires = [
+    "gtk3",
+    "libsdl2-2.0-0"
+]
+
+# 📦 Packaging and Deployment Settings
+[tool.briefcase.app.gamescoretracker.packaging]
+requires = []
+
+[build-system]
+requires = ["briefcase"]
+build-backend = "briefcase.build_system"
