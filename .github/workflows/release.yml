@@ -70,8 +70,8 @@ jobs:
         run: pip install pyinstaller
 
       - name: Build Binary
-        run: pyinstaller --onefile --name GamescoreTracker App.py
-
+        run: pyinstaller --onefile --name GamescoreTracker --target-arch universal2 App.py
+        
       - name: Make macOS binary executable
         run: chmod +x dist/GamescoreTracker
 
