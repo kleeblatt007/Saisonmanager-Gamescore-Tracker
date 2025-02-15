@@ -1,0 +1,114 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - "v1.*"  # Runs only when a tag like v1.0 is pushed
+
+jobs:
+  build_linux:
+    name: Build Linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Install PyInstaller
+        run: pip install pyinstaller
+
+      - name: Build Binary
+        run: pyinstaller --onefile --name GamescoreTracker App.py
+
+      - name: Upload Linux Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GamescoreTracker-linux
+          path: dist/GamescoreTracker
+
+  build_windows:
+    name: Build Windows
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Install PyInstaller
+        run: pip install pyinstaller
+
+      - name: Build Binary
+        run: pyinstaller --onefile --name GamescoreTracker App.py
+
+      - name: Upload Windows Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GamescoreTracker-windows
+          path: dist/GamescoreTracker.exe
+
+  build_mac:
+    name: Build macOS
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Install PyInstaller
+        run: pip install pyinstaller
+
+      - name: Build Binary
+        run: pyinstaller --onefile --name GamescoreTracker App.py
+
+      - name: Upload macOS Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GamescoreTracker-mac
+          path: dist/GamescoreTracker
+
+  release:
+    name: Create GitHub Release
+    needs: [build_linux, build_windows, build_mac]  # Wait for all builds to complete
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Move artifacts to a single folder
+        run: |
+          mkdir -p artifacts
+          mv GamescoreTracker-linux/GamescoreTracker artifacts/GamescoreTracker-linux || true
+          mv GamescoreTracker-windows/GamescoreTracker.exe artifacts/GamescoreTracker.exe || true
+          mv GamescoreTracker-mac/GamescoreTracker artifacts/GamescoreTracker-mac || true
+
+      - name: Debug/ Show downloaded artifacts
+        run: ls -R artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          body: |
+            Automated release for version ${{ github.ref_name }}.
+          files: |
+            artifacts/GamescoreTracker-linux
+            artifacts/GamescoreTracker.exe
+            artifacts/GamescoreTracker-mac
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
