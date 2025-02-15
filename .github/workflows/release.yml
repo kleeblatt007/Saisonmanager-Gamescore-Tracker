@@ -69,10 +69,10 @@ jobs:
       - name: Install PyInstaller
         run: pip install pyinstaller
 
-      - name: Build Binary
+      - name: Build macOS Binary
         run: pyinstaller --onefile --name GamescoreTracker --target-arch universal2 App.py
-        
-      - name: Make macOS binary executable
+
+      - name: Make macOS Binary Executable
         run: chmod +x dist/GamescoreTracker
 
       - name: Upload macOS Artifact
@@ -98,6 +98,9 @@ jobs:
           mv GamescoreTracker-linux/GamescoreTracker artifacts/GamescoreTracker-linux || true
           mv GamescoreTracker-windows/GamescoreTracker.exe artifacts/GamescoreTracker.exe || true
           mv GamescoreTracker-mac/GamescoreTracker artifacts/GamescoreTracker-mac || true
+
+      - name: Make macOS Binary Executable Again (Just in Case)
+        run: chmod +x artifacts/GamescoreTracker-mac
 
       - name: Debug/ Show downloaded artifacts
         run: ls -R artifacts
