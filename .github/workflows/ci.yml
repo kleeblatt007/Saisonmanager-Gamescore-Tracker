@@ -1,91 +1,43 @@
-name: CI
+name: Build with Nuitka
+
 on:
   push:
     tags:
-      - "v2.*"
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
-
-env:
-  FORCE_COLOR: "1"
-
-defaults:
-  run:
-    shell: bash
+      - "v2.*"  # Runs only when a new version tag is pushed
 
 jobs:
-  ci:
-    name: Test and Package
-    runs-on: ${{ matrix.runs-on }}
+  build:
+    name: Build Executable
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        target: [ "Windows", "macOS", "Ubuntu-24.04", "Fedora-40"]
-        include:
-          - target: "Windows"
-            runs-on: "windows-latest"
-
-          - target: "macOS"
-            runs-on: "macos-latest"
-
-          - target: "Ubuntu-24.04"
-            platform: "Linux"
-            runs-on: "ubuntu-latest"
-            pre-command: "sudo apt -y install socat"
-            briefcase-run-prefix: "xvfb-run"
-            briefcase-args: "--target ubuntu:24.04"
-
-          - target: "Fedora-40"
-            platform: "Linux"
-            runs-on: "ubuntu-latest"
-            pre-command: "sudo apt -y install socat"
-            briefcase-run-prefix: "xvfb-run"
-            briefcase-args: "--target fedora:40"
+        os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.12"
+          python-version: "3.12"  # Adjust if needed
 
-      - name: Install Briefcase
+      - name: Install Dependencies
         run: |
-          python -m pip install -U pip setuptools wheel
-          python -m pip install briefcase
+          python -m pip install --upgrade pip
+          pip install nuitka
 
-      - name: Setup Environment
-        run: |
-          ${{ matrix.pre-command }}
+      - name: Build Executable with Nuitka
+        uses: Nuitka/Nuitka-Action@main
+        with:
+          script-name: "App.py"
+          standalone: true
+          onefile: true
+          output-dir: "dist"
 
-      - name: Build App
-        run: |
-          briefcase build ${{ matrix.target }} --no-input --log ${{ matrix.briefcase-args }}
-
-      - name: Test App
-        run: |
-          ${{ matrix.briefcase-run-prefix }} briefcase run ${{ matrix.target }} --test --no-input --log ${{ matrix.briefcase-args }}
-
-      - name: Package App
-        run: |
-          briefcase package ${{ matrix.target }} --update --adhoc-sign --no-input --log ${{ matrix.briefcase-args }}
-
-      - name: Upload App
-        if: matrix.target != 'iOS'
+      - name: Upload Executable
         uses: actions/upload-artifact@v4
         with:
-          name: App-${{ matrix.target }}
-          path: |
-            macOS/build/*.app
-            dist/
-
-      - name: Upload Log
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: Log-Failure-${{ matrix.target }}
-          path: logs/*
+          name: Nuitka-Build-${{ runner.os }}
+          path: dist/
