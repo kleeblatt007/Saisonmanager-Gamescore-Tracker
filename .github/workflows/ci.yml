@@ -31,10 +31,10 @@ jobs:
       - name: Build Executable with Nuitka
         uses: Nuitka/Nuitka-Action@main
         with:
-          script-name: "App.py"
-          standalone: true
-          onefile: true
-          output-dir: "dist"
+          nuitka-version: main
+          script-name: App.py
+          mode: standalone
+          enable-plugins: tk-inter
 
       - name: Upload Executable
         uses: actions/upload-artifact@v4
