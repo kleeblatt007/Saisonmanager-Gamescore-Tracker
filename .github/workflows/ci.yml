@@ -36,14 +36,32 @@ jobs:
           mode: standalone
           enable-plugins: tk-inter
 
+      - name: Rename macOS Binary
+        if: runner.os == 'macOS'
+        run: |
+          mkdir -p dist
+          mv build/App.dist/App.bin dist/GamescoreTracker-mac
+
+      - name: Rename Windows Binary
+        if: runner.os == 'Windows'
+        run: |
+          mkdir -p dist
+          mv build/App.dist/App.exe dist/GamescoreTracker.exe
+
+      - name: Rename Linux Binary
+        if: runner.os == 'Linux'
+        run: |
+          mkdir -p dist
+          mv build/App.dist/App.bin dist/GamescoreTracker-linux
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ runner.os }} Build
+          name: Nuitka-Build-${{ runner.os }}
           path: |
-            build/*.exe
-            build/*.bin
-            build/*.app/**/*
+            dist/GamescoreTracker-mac
+            dist/GamescoreTracker.exe
+            dist/GamescoreTracker-linux
           include-hidden-files: true
 
   release:
