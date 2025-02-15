@@ -21,14 +21,15 @@ jobs:
       - name: Install Briefcase
         run: pip install briefcase
 
-      - name: Check for pyproject.toml
+      - name: Initialize Briefcase Project (if missing)
         run: |
           if [ ! -f "pyproject.toml" ]; then
             echo "Initializing Briefcase..."
-            briefcase new --template standard
+            briefcase new --no-input --template standard
           else
             echo "pyproject.toml found, proceeding..."
           fi
+
 
       - name: Build macOS App
         run: |
