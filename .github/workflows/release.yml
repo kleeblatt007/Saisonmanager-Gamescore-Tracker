@@ -1,17 +1,13 @@
-name: Build and Release Python App
+name: Build and Release Python App (macOS)
 
 on:
   push:
     tags:
-      - "v*"  # Run only on version tags like v1.0
+      - "v*"  # Runs only on version tags like v1.0
 
 jobs:
-  build:
-    name: Build Python App
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]  # Multi-platform
+  build-macos:
+    runs-on: macos-latest
 
     steps:
       - name: Checkout Repository
@@ -25,51 +21,39 @@ jobs:
       - name: Install Briefcase
         run: pip install briefcase
 
-      - name: Build macOS App (if macOS)
-        if: runner.os == 'macOS'
+      - name: Check for pyproject.toml
+        run: |
+          if [ ! -f "pyproject.toml" ]; then
+            echo "Initializing Briefcase..."
+            briefcase new --template standard
+          else
+            echo "pyproject.toml found, proceeding..."
+          fi
+
+      - name: Build macOS App
         run: |
           briefcase create macOS
           briefcase build macOS
           briefcase package macOS
           mv macOS/build/*/*.app GamescoreTracker-mac.app  # Rename
 
-      - name: Build Windows App (if Windows)
-        if: runner.os == 'Windows'
-        run: |
-          briefcase create windows
-          briefcase build windows
-          briefcase package windows
-          mv windows/build/*/*.exe GamescoreTracker.exe  # Rename
-
-      - name: Build Linux App (if Linux)
-        if: runner.os == 'Linux'
-        run: |
-          briefcase create linux
-          briefcase build linux
-          briefcase package linux
-          mv linux/build/*/*.AppImage GamescoreTracker-linux.AppImage  # Rename
-
-      - name: Upload Artifacts
+      - name: Upload macOS Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: GamescoreTracker-${{ runner.os }}
-          path: |
-            GamescoreTracker-mac.app
-            GamescoreTracker.exe
-            GamescoreTracker-linux.AppImage
+          name: GamescoreTracker-mac
+          path: GamescoreTracker-mac.app
 
   release:
-    name: Create GitHub Release
-    needs: [build]
+    needs: [build-macos]
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
-      - name: Download Built Artifacts
+      - name: Download Built macOS Artifact
         uses: actions/download-artifact@v4
 
-      - name: Make macOS Binary Executable Again (Just in Case)
+      - name: Make macOS Binary Executable
         run: chmod +x GamescoreTracker-mac.app || true
 
       - name: Create GitHub Release
@@ -78,9 +62,6 @@ jobs:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
           body: "Automated release for version ${{ github.ref_name }}"
-          files: |
-            GamescoreTracker-mac.app
-            GamescoreTracker.exe
-            GamescoreTracker-linux.AppImage
+          files: GamescoreTracker-mac.app
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
