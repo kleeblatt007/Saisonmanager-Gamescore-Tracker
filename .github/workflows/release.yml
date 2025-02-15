@@ -47,7 +47,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
          path: artifacts
-         pattern: artifacts-*
 
       - name: Display downloaded files
         run: ls -R artifacts
