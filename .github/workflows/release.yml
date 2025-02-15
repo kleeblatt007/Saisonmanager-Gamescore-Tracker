@@ -46,11 +46,11 @@ jobs:
       - name: Download all build artifacts
         uses: actions/download-artifact@v4
         with:
-         path: my-artifact
-         pattern: my-artifact-*
+         path: artifacts
+         pattern: artifacts-*
 
       - name: Display downloaded files
-        run: ls -R my-artifact
+        run: ls -R artifacts
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
